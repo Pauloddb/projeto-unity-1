@@ -13,29 +13,28 @@ public class Player : MonoBehaviour
 
     private Rigidbody2D rb;
 
-    private Animator animator;
+    private Animator anim;
 
     [Header("Player Settings")]
-    [SerializeField] private float speed = 5f;
+    [SerializeField] private float speed;
+    public float maxHealth;
+    public float health;
 
     [Header("Attack Settings")]
     [SerializeField] private Transform gun;
     [SerializeField] private GameObject bulletPrefab;
-    [SerializeField] private float bulletSpeed = 10f;
-    [SerializeField] private float bulletLifeTime = 5f;
-    [SerializeField] private float attackCooldown = 0.2f;
+    [SerializeField] private float bulletSpeed;
+    [SerializeField] private float bulletLifeTime;
+    [SerializeField] private float attackCooldown;
     [SerializeField] private bool canAttack;
     [SerializeField] private bool isAttacking;
-
-    [Header("Animation Settings")]
-    [SerializeField] private List<string> animationsNames = new List<string>();
 
     private void Awake()
     {
         controls = new InputActions();
 
         rb = GetComponent<Rigidbody2D>();
-        animator = GetComponent<Animator>();
+        anim = GetComponent<Animator>();
 
         canAttack = true;
     }
@@ -64,12 +63,21 @@ public class Player : MonoBehaviour
         SetAnimation();
     }
 
+    private void Update()
+    {
+        SetAnimation();
+    }
+
     private void Move()
     {
         rb.velocity = new Vector2(moveInput.x, moveInput.y) * speed;
 
         Vector3 scale = transform.localScale;
-        scale.x = Mathf.Sign(rb.velocity.x);
+
+        if (rb.velocity != Vector2.zero)
+        {
+            scale.x = Mathf.Sign(rb.velocity.x);
+        }
 
         transform.localScale = scale;
     }
@@ -137,20 +145,9 @@ public class Player : MonoBehaviour
 
     private void SetAnimation()
     {
-        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+        controls.Player.Attack.performed += ctx => anim.SetTrigger("Attack");
 
-        if (isAttacking && !stateInfo.IsName(animationsNames[2]))
-        {
-            animator.Play(animationsNames[2]);
-        }
-        else if (rb.velocity != Vector2.zero && !stateInfo.IsName(animationsNames[1]))
-        {
-            animator.Play(animationsNames[1]);
-        }
-        else if (rb.velocity == Vector2.zero && !stateInfo.IsName(animationsNames[0]))
-        {
-            animator.Play(animationsNames[0]);
-        } 
+        if (moveInput != Vector2.zero) anim.SetBool("isMoving", true);
+        else anim.SetBool("isMoving", false);
     }
 }
-#pragma warning restore CS0618
