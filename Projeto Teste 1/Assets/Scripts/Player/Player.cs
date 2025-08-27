@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
@@ -17,8 +19,12 @@ public class Player : MonoBehaviour
 
     [Header("Player Settings")]
     [SerializeField] private float speed;
+
+    [Header("Health Settings")]
+    [SerializeField] private Image lifeBar;
     public float maxHealth;
     public float health;
+
 
     [Header("Attack Settings")]
     [SerializeField] private Transform gun;
@@ -36,6 +42,12 @@ public class Player : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
 
+        
+    }
+
+
+    private void Start()
+    {
         canAttack = true;
     }
 
@@ -59,12 +71,17 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (health <= 0f) return;
+
         Move();
-        SetAnimation();
     }
 
     private void Update()
     {
+        SetLifeBar();
+
+        if (health <= 0f) SceneManager.LoadScene("SampleScene");
+
         SetAnimation();
     }
 
@@ -149,5 +166,11 @@ public class Player : MonoBehaviour
 
         if (moveInput != Vector2.zero) anim.SetBool("isMoving", true);
         else anim.SetBool("isMoving", false);
+    }
+
+
+    private void SetLifeBar()
+    {
+        lifeBar.rectTransform.sizeDelta = new Vector2(health * 2f, lifeBar.rectTransform.sizeDelta.y);
     }
 }
